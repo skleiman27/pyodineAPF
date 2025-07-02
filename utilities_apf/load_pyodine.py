@@ -9,6 +9,9 @@ import h5py
 from pyodine import components
 
 from utilities_song import conf
+from astroquery.simbad import Simbad
+Simbad = Simbad()
+
 #use barycorrpy to calculate barycentric
 __all__ = ["IodineTemplate", "ObservationWrapper"]
 
@@ -55,14 +58,14 @@ class ObservationWrapper(components.Observation):
     # Custom properties
     _spec = None    # Internal storage of spectral flux
     _wave = None    # Internal storage of wavelength solution
-    _cont = None    # Internal storage of extracted continuum
+    #_cont = None    # Internal storage of extracted continuum
 
     def __init__(self, filename, instrument=None, star=None):
-        flux, wave, cont, header = load_file(filename)
+        flux, wave, header = load_file(filename) #cont removed for now, we'll see what happens :D
 
         self._flux = flux
         self._wave = wave
-        self._cont = cont
+        #self._cont = cont
         
         """ Weights added. Using this formula from dop code for now
             (the value of 0.008 is the flatfield noise - should be changed)
@@ -114,9 +117,9 @@ class ObservationWrapper(components.Observation):
         if type(order) is int or hasattr(order, '__int__'):
             flux = self._flux[order]
             wave = self._wave[order]
-            cont = self._cont[order]
+            #cont = self._cont[order]
             #weight = self._weight[order]
-            return components.Spectrum(flux, wave=wave, cont=cont)#, weight=weight)
+            return components.Spectrum(flux, wave=wave)#, cont=cont)#, weight=weight)
         elif isinstance(order, (list, np.ndarray)):
             return [self.__getitem__(int(i)) for i in order]  # Return MultiOrderSpectrum instead?
         elif type(order) is slice:
@@ -143,22 +146,24 @@ def load_file(filename) -> components.Observation:
     try:
         ext = splitext(filename)[1]
         if ext == '.fits':
-            if
             # Load the file
             h = pyfits.open(filename)
             header = h[0].header
             # Prepare data
+            d = h[0].data
             if 'OPT_DONE' in header.keys():
-                flux = h[0].data[0] if header['OPT_DONE'] == 'TRUE' else h[0].data[1]
+                flux = d["OPT_COUNTS"]
+                wave = d["OPT_WAVE"]
             else:
-                flux = h[0].data[0] if sum(h[0].data[0].flatten()) > 0 else h[0].data[1]
-            cont = h[0].data[2]
-            wave = h[0].data[3]
+                flux = d["BOX_COUNTS"]
+                wave = d["BOX_WAVE"]
+                
+            
             #weight = None
 
             h.close()
             # TODO: Check for `songwriter` signature
-            return flux, wave, cont, header
+            return flux, wave, header #cont
         else:
             # Unsupported file format
             raise TypeError('Unsupported file format (%s)' % ext)
@@ -168,7 +173,7 @@ def load_file(filename) -> components.Observation:
         print(e.args[0])
 
 
-def get_star(header) -> components.Star:
+def get_star(header,instrument) -> components.Star:
     """Create a star object based on header data
     
     :param header: The Fits-header.
@@ -178,8 +183,10 @@ def get_star(header) -> components.Star:
     :rtype: :class:`Star`
     """
     # TODO: Load stars from some kind of catalog based on name instead?
-
-    name = or_none(header, 'TARGET')
+    if 'APF' in instrument.name:
+        name = or_none(header, 'OBJECT')
+    else:
+        name = or_none(header, 'TARGET')
     try:
         coordinates = SkyCoord(
             header['RA'].strip() + ' ' + header['DEC'].strip(),
@@ -189,11 +196,19 @@ def get_star(header) -> components.Star:
         # TODO: Log this event
         coordinates = None
     # Get the proper motion vector
-    try:
-        proper_motion = (header['S-PM-RA'], header['S-PM-DEC'])
-    except Exception as e:
-        # TODO: Log this event
-        proper_motion = (None, None)
+    ###
+    if 'APF' in instrument.name:
+        Simbad.add_votable_fields('pmra', 'pmdec')
+        info = Simbad.query_object(name)
+        proper_motion = (info['pmra'].data[0], info['pmdec'].data[0])
+    ###
+        
+    else:
+        try:
+            proper_motion = (header['S-PM-RA'], header['S-PM-DEC'])
+        except Exception as e:
+            # TODO: Log this event
+            proper_motion = (None, None)
 
     return components.Star(name, coordinates=coordinates, proper_motion=proper_motion)
 
@@ -218,7 +233,7 @@ def get_instrument(header) -> components.Instrument:
         '3M-COUDE' in header['TELESCOP'].upper() or '3M-CAT' in header['PROGRAM'].upper():
             return conf.my_instruments['lick']
         elif 'APF' in header['TELESCOP']:####### Added
-            return conf.my_instruments['APF']#########
+            return conf.my_instruments['apf']#########
     else:
         if 'NEWCAM' in header['PROGRAM'] and 'hamcat' in header['VERSION']:
             return conf.my_instruments['lick']
@@ -226,7 +241,7 @@ def get_instrument(header) -> components.Instrument:
         raise TypeError('Could not determine instrument')
 
 
-def check_iodine_cell(header):
+def check_iodine_cell(header,instrument):
     """Check the position and state of the I2 cell during the observation
     
     :param header: The Fits-header.
@@ -238,7 +253,16 @@ def check_iodine_cell(header):
     :rtype: int, or None
     """
     # If the IODID keyword is set, we should be safe
-    if 'IODID' in header.keys() and header['I2POS'] != 2:
+    ###APF specific
+    if 'APF' in instrument.name:
+        if header['ICELNAM'] == 'Out':
+            iodine_in_spectrum = False
+        elif header['ICELNAM'] == 'In':
+            iodine_in_spectrum = True
+            iodine_cell_id = 5
+    ###
+
+    elif 'IODID' in header.keys() and header['I2POS'] != 2:
         iodine_in_spectrum = True
         iodine_cell_id = header['IODID']
     # Otherwise, let's make a qualified guess based on the I2POS keyword
@@ -301,12 +325,13 @@ def get_exposuretime(header, instrument):
 
 def get_barytime(header, instrument):
     """Get the date and time of the weighted midpoint from the fits header
-    (this extra function is neccessary to make old Lick spectra work smoothly)\
-    
+    (this extra function is neccessary to make old Lick spectra work smoothly)
     """
     if 'SONG' in instrument.name:
         return or_none(header, 'BJD-MID')
-    elif 'Lick' or 'APF' in instrument.name: ########
+    elif 'APF' in instrument.name:
+        return(or_none,'THEMIDPT')
+    elif 'Lick' in instrument.name: ########
         # in Lick the MID-time is only given in hrs, mins, secs
         # so we create the MID-JD manually here
         date  = header['DATE-OBS'].strip()[:10]
