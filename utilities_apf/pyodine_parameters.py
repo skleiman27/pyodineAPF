@@ -23,8 +23,10 @@ utilities_dir_path = os.path.dirname(os.path.realpath(__file__))
 # For the MultiGaussian model: 11 positions & sigmas for the central Gauss and
 # the satellites
 _multigauss_setup_dict = {
-        'positions': [-2.9, -2.5, -1.9, -1.4, -1.0, 0.0, 1.0, 1.4, 1.9, 2.5, 2.9],
-        'sigmas':    [ 0.9,  0.9,  0.9,  0.9,  0.9, 0.6, 0.9, 0.9, 0.9, 0.9, 0.9]
+        #'positions': [-2.9, -2.5, -1.9, -1.4, -1.0, 0.0, 1.0, 1.4, 1.9, 2.5, 2.9],
+        #'sigmas':    [ 0.9,  0.9,  0.9,  0.9,  0.9, 0.6, 0.9, 0.9, 0.9, 0.9, 0.9]
+        'positions': [0.,-6.,-4.8,-3.7,-2.7,-1.8,-1.2,-0.8,0.8,1.2,1.8,2.7, 3.7,4.8,6.],
+        'sigmas': [1.10,0., 1.0, 0.8,0.65, 0.5, 0.4, 0.3,0.3,0.4,0.5,0.65,0.8,1.0,0.]
         }
 
 
@@ -457,7 +459,7 @@ class Template_Parameters:
         self.rel_noise = 0.008                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
         
         # I2 atlas:
-        self.i2_to_use = 1                      # Index of I2 FTS to use (see archive/conf.py)
+        self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
         self.wavelength_scale = 'air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # The parameters for the Jansson deconvolution algorithm.

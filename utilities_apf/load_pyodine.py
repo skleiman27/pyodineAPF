@@ -10,6 +10,7 @@ from pyodine import components
 
 from utilities_song import conf
 from astroquery.simbad import Simbad
+from pyodine import template as temp
 Simbad = Simbad()
 
 #use barycorrpy to calculate barycentric
@@ -58,14 +59,14 @@ class ObservationWrapper(components.Observation):
     # Custom properties
     _spec = None    # Internal storage of spectral flux
     _wave = None    # Internal storage of wavelength solution
-    #_cont = None    # Internal storage of extracted continuum
+    _cont = None    # Internal storage of extracted continuum
 
     def __init__(self, filename, instrument=None, star=None):
-        flux, wave, header = load_file(filename) #cont removed for now, we'll see what happens :D
+        flux, cont, wave, header = load_file(filename) #cont removed for now, we'll see what happens :D
 
         self._flux = flux
         self._wave = wave
-        #self._cont = cont
+        self._cont = cont #set to wrong values rather than not include
         
         """ Weights added. Using this formula from dop code for now
             (the value of 0.008 is the flatfield noise - should be changed)
@@ -117,9 +118,9 @@ class ObservationWrapper(components.Observation):
         if type(order) is int or hasattr(order, '__int__'):
             flux = self._flux[order]
             wave = self._wave[order]
-            #cont = self._cont[order]
+            cont = self._cont[order]
             #weight = self._weight[order]
-            return components.Spectrum(flux, wave=wave)#, cont=cont)#, weight=weight)
+            return components.Spectrum(flux, wave=wave, cont=cont)#, weight=weight)
         elif isinstance(order, (list, np.ndarray)):
             return [self.__getitem__(int(i)) for i in order]  # Return MultiOrderSpectrum instead?
         elif type(order) is slice:
@@ -157,13 +158,13 @@ def load_file(filename) -> components.Observation:
             else:
                 flux = d["BOX_COUNTS"]
                 wave = d["BOX_WAVE"]
-                
+            cont = temp.normalize.top(flux, degree=5)   
             
             #weight = None
 
             h.close()
             # TODO: Check for `songwriter` signature
-            return flux, wave, header #cont
+            return flux, cont, wave, header
         else:
             # Unsupported file format
             raise TypeError('Unsupported file format (%s)' % ext)
@@ -196,7 +197,7 @@ def get_star(header,instrument) -> components.Star:
         # TODO: Log this event
         coordinates = None
     # Get the proper motion vector
-    ###
+    ### move this to pypeit wrapper
     if 'APF' in instrument.name:
         Simbad.add_votable_fields('pmra', 'pmdec')
         info = Simbad.query_object(name)
@@ -253,7 +254,7 @@ def check_iodine_cell(header,instrument):
     :rtype: int, or None
     """
     # If the IODID keyword is set, we should be safe
-    ###APF specific
+    ###APF specific, move to wrapper
     if 'APF' in instrument.name:
         if header['ICELNAM'] == 'Out':
             iodine_in_spectrum = False
