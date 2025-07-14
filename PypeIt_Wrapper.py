@@ -7,10 +7,10 @@ import argparse
 
 from astropy.io import fits as fits
 from astropy.time import Time
-
 import numpy as np
 import matplotlib.pyplot as plt
 import tqdm
+from jdcal import gcal2jd
 from pyodine import template as temp
 from pyodine import timeseries as ts
 from astroquery.simbad import Simbad
@@ -167,21 +167,15 @@ for sci_im in sci_ims:
 
         blaze_add(out_file,sci_im)
 
+        date = out_header["THEMIDPT"]
+        pri_date = date[0:10].split('-')
+        sec_date = date[11: ].split(':')
+        for i in np.arange(0,3):
+            pri_date[i] = float(pri_date[i])
+            sec_date[i] = float(sec_date[i])
+        JD = sum(gcal2jd(pri_date[0],pri_date[1],pri_date[2]))+(sec_date[0]+sec_date[1]/60+sec_date[2]/3600)/24
 
-        #bvc_dict = {
-        #    'star_ra': out_header["RA"],
-        #    'star_dec': out_header["DEC"],
-        #    'star_pmra': out_header["PMRA"],
-        #    'star_pmdec': out_header["PMDEC"],
-        #    'star_rv0': out_header["radvel"],
-        #    'star_ra': out_header["RA"],
-        #    'instrument_lat': out_header["LAT-OBS"],
-        #    'instrument_long': out_header["LON-OBS"],
-        #    'instrument_alt': out_header["ALT-OBS"],
-        #}
-
-        #ts_dict = {}
-        bc_vel = get_BC_vel(JDUTC=2458000, ra=out_header["RA"], dec=out_header["DEC"], lat=out_header["LAT-OBS"], longi=out_header["LON-OBS"], alt=out_header["ALT-OBS"], pmra=out_header["PMRA"],
+        bc_vel = get_BC_vel(JDUTC=JD, ra=out_header["RA"], dec=out_header["DEC"], lat=out_header["LAT-OBS"], longi=out_header["LON-OBS"], alt=out_header["ALT-OBS"], pmra=out_header["PMRA"],
                     pmdec=out_header["PMDEC"], px=out_header["Parallax"], rv=out_header["radvel"], zmeas=out_header['redshift'],epoch=2451545.0)
         print(bc_vel)
         out_header["BVC"] = bc_vel[0][0]
