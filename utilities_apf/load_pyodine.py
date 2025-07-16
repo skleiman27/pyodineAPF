@@ -8,7 +8,7 @@ from astropy.time import Time, TimeDelta
 import h5py
 from pyodine import components
 
-from utilities_song import conf
+from utilities_apf import conf
 from astroquery.simbad import Simbad
 from pyodine import template as temp
 Simbad = Simbad()
@@ -62,7 +62,7 @@ class ObservationWrapper(components.Observation):
     _cont = None    # Internal storage of extracted continuum
 
     def __init__(self, filename, instrument=None, star=None):
-        flux, cont, wave, header = load_file(filename) #cont removed for now, we'll see what happens :D
+        flux, cont, wave, header = load_file(filename) 
 
         self._flux = flux
         self._wave = wave
@@ -83,8 +83,8 @@ class ObservationWrapper(components.Observation):
         self.orig_filename = abspath(filename)
 
         self.instrument = instrument or get_instrument(header)
-        self.star = star or get_star(header)
-        self.iodine_in_spectrum, self.iodine_cell_id = check_iodine_cell(header)
+        self.star = star or get_star(header,self.instrument)
+        self.iodine_in_spectrum, self.iodine_cell_id = check_iodine_cell(header,self.instrument)
 
         # Camera details
         self.exp_time = get_exposuretime(header, self.instrument)  # or_none(header, 'EXPOSURE')
@@ -94,11 +94,11 @@ class ObservationWrapper(components.Observation):
         self.dark_current = None    # FIXME: Not in header
 
         # Timing
-        self.time_start = Time(header['DATE-OBS'].strip(), format='isot', scale='utc')
+        self.time_start = Time(header['DATETIME'].strip(), format='isot', scale='utc')
         self.time_weighted = None
 
-        self.bary_date = or_none(header, 'JD-MID')
-        self.bary_vel_corr = or_none(header, 'BVC') * 1000.     # km/s in SONG header
+        self.bary_date = or_none(header, 'THEMIDPT')
+        self.bary_vel_corr = or_none(header, 'BVC')     # m/s in apf header
         #self.topo_bary_factor = or_none(header, 'BVCFACT')
         #self.mjd_corr = or_none(header, 'MID-JD')#'MBJD')
         #self.moon_vel = or_none(header, 'MOONVEL') * 1000.  # convert to m/s
@@ -147,18 +147,37 @@ def load_file(filename) -> components.Observation:
     try:
         ext = splitext(filename)[1]
         if ext == '.fits':
+            opt_flag = False
             # Load the file
             h = pyfits.open(filename)
             header = h[0].header
+            checker = h[1].header
+            if 'OPT_DONE' in checker.keys():
+                opt_flag = True
+            
+            flux = np.array
             # Prepare data
-            d = h[0].data
-            if 'OPT_DONE' in header.keys():
-                flux = d["OPT_COUNTS"]
-                wave = d["OPT_WAVE"]
-            else:
-                flux = d["BOX_COUNTS"]
-                wave = d["BOX_WAVE"]
-            cont = temp.normalize.top(flux, degree=5)   
+            for i in np.arange(1,56):
+                d = h[i].data
+
+                if opt_flag == True:
+
+                    if i == 1:
+                        flux = d["OPT_COUNTS"]
+                        wave = d["OPT_WAVE"]
+                    if i > 1:
+                        flux = np.vstack((flux,d["OPT_COUNTS"]))
+                        wave = np.vstack((wave,d["OPT_WAVE"]))
+                else:
+
+                    if i == 1:
+                        flux = d["BOX_COUNTS"]
+                        wave = d["BOX_WAVE"]
+                    if i > 1:
+                        flux = np.vstack((flux,d["BOX_COUNTS"]))
+                        wave = np.vstack((wave,d["BOX_WAVE"]))
+
+            cont = h[57].data
             
             #weight = None
 
@@ -185,8 +204,6 @@ def get_star(header,instrument) -> components.Star:
     """
     # TODO: Load stars from some kind of catalog based on name instead?
     if 'APF' in instrument.name:
-        name = or_none(header, 'OBJECT')
-    else:
         name = or_none(header, 'TARGET')
     try:
         coordinates = SkyCoord(
@@ -199,9 +216,7 @@ def get_star(header,instrument) -> components.Star:
     # Get the proper motion vector
     ### move this to pypeit wrapper
     if 'APF' in instrument.name:
-        Simbad.add_votable_fields('pmra', 'pmdec')
-        info = Simbad.query_object(name)
-        proper_motion = (info['pmra'].data[0], info['pmdec'].data[0])
+        proper_motion = (header['PMRA'], header['PMDEC'])
     ###
         
     else:
@@ -223,18 +238,22 @@ def get_instrument(header) -> components.Instrument:
     :return: The instrument object.
     :rtype: :class:`Instrument`
     """
+    #print(conf.my_instruments)
+    #print(conf.my_iodine_atlases)
     if 'TELESCOP' in header:
-        if 'Node 1' in header['TELESCOP'] and 'Spectrograph' in header['INSTRUM']:
+        if 'APF' in header['TELESCOP']:####### Added
+        #    print("Instrument: APF")
+            return conf.my_instruments['apf']#########
+        elif 'Node 1' in header['TELESCOP'] and 'Spectrograph' in header['INSTRUM']:
             return conf.my_instruments['song_1']
         elif 'Node 2' in header['TELESCOP'] and 'Spectrograph' in header['INSTRUM']:
             return conf.my_instruments['song_2']
         elif 'Waltz' in header['TELESCOP']:
+        #    print(header["TELESCOP"])
             return conf.my_instruments['waltz']
         elif 'Hamilton' in header['INSTRUME'] or 'HAMILTON' in header['PROGRAM'].upper() or \
         '3M-COUDE' in header['TELESCOP'].upper() or '3M-CAT' in header['PROGRAM'].upper():
             return conf.my_instruments['lick']
-        elif 'APF' in header['TELESCOP']:####### Added
-            return conf.my_instruments['apf']#########
     else:
         if 'NEWCAM' in header['PROGRAM'] and 'hamcat' in header['VERSION']:
             return conf.my_instruments['lick']
@@ -255,7 +274,9 @@ def check_iodine_cell(header,instrument):
     """
     # If the IODID keyword is set, we should be safe
     ###APF specific, move to wrapper
+    iodine_cell_id = None
     if 'APF' in instrument.name:
+        print("APF IN USE")
         if header['ICELNAM'] == 'Out':
             iodine_in_spectrum = False
         elif header['ICELNAM'] == 'In':
@@ -268,6 +289,7 @@ def check_iodine_cell(header,instrument):
         iodine_cell_id = header['IODID']
     # Otherwise, let's make a qualified guess based on the I2POS keyword
     else:
+        print("uh oh!")
         # TODO: Log this event
         # Position 3 corresponds to id=1
         if header['I2POS'] == 3:

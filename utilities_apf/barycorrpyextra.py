@@ -12,9 +12,9 @@ import os
 from barycorrpy import find_hip
 from barycorrpy import PINT_erfautils as PINT
 from barycorrpy import utc_tdb
-#from SolarSystemBC import SolarBarycentricCorrection, ReflectedLightBarycentricCorrection
-#from .utils import flux_weighting, get_stellar_data, CalculatePositionVector
-#from .PhysicalConstants import *
+from SolarSystemBC import SolarBarycentricCorrection, ReflectedLightBarycentricCorrection
+from .utils import flux_weighting, get_stellar_data, CalculatePositionVector
+from .PhysicalConstants import *
 
 ### Need to install jplephem ###
 #de430 is 100 MB in size

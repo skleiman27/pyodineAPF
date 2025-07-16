@@ -28,15 +28,17 @@ def create_results_dict(fit_results):
     :return: The dictionary with the results.
     :rtype: dict
     """
-    
+
     res_dict = {k: None for k in _group_keys}
     res_dict.update( {k: None for k in _array_keys} )
-    
+
     # Collect observation info
     # Note: Unicode strings are currently not supported by h5py, so we need to
     # convert to bytestring (ascii). Special characters are replaced with
     # question marks
+
     obs = fit_results[0].chunk.observation
+
     res_dict['observation'] = {
             'instrument_name': obs.instrument.name.encode('utf8', 'replace'),
             'instrument_long': obs.instrument.longitude,

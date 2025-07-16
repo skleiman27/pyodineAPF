@@ -15,6 +15,7 @@ import sys
 import time
 import numpy as np
 import logging
+import pdb
 
 import argparse
 import importlib
@@ -239,7 +240,13 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
         # done here
         if Pars.normalize_chunks is True:
             for o in ostar.orders:
+                print("------------------")
+                print(ostar[o].flux)
+                print(ostar[o].cont)
+                print("------------------")
                 ostar._flux[o] = (ostar[o].flux / ostar[o].cont / len(all_ostar_obs))
+                print(ostar._flux[0])
+                #pdb.set_trace()
                 #ostar._flux[o] = (ostar[o].flux / pyodine.template.normalize.top(ostar[o].flux, deg=3))
         
         # Now create the chunks, using the algorithm (and corresponding parameters) 

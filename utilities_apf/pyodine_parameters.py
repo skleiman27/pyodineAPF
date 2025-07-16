@@ -75,7 +75,7 @@ class Parameters:
         self.order_range = (None,None)          # Order range (min,max) to use in observation modeling;
                                                 # (None,None) uses automatically the same as in the template
         # The chunk width is now determined by the template chunks
-        #self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
+        #self.chunk_width = #91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 6                  # Padding (left and right) of the chunks in pixels
         self.chunks_per_order = None            # Maximum number of chunks per order (optional)
         self.chunk_delta_v = None               # Velocity shift between template and observation 
@@ -88,7 +88,7 @@ class Parameters:
         self.maxlag  = 500                      # The number of steps to each side in the cross-correlation
         
         # Normalize chunks in the beginning?
-        self.normalize_chunks = False
+        self.normalize_chunks = True
         
         # Weighting of pixels:
         self.bad_pixel_mask = False             # Whether to run the bad pixel mask
@@ -431,7 +431,7 @@ class Template_Parameters:
         self.chunking_algorithm = 'auto_equal_width'
         # If the auto_equal_width chunking algorithm is used, the chunks are defined by the user
         # through their width, padding, number of chunks per order, and pixel offset of the first chunk:
-        self.temp_order_range = (18,41)         # Order range (min,max) to use in observation modeling;
+        self.temp_order_range =(40,41) #(18,41)         # Order range (min,max) to use in observation modeling;
                                                 # (None,None) uses all orders
         self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 25                 # Padding (left and right) of the chunks in pixels
@@ -449,7 +449,7 @@ class Template_Parameters:
         self.maxlag  = 500                      # The number of steps to each side in the cross-correlation
         
         # Normalize chunks in the beginning?
-        self.normalize_chunks = False
+        self.normalize_chunks = True
         
         # Weighting of pixels:
         self.bad_pixel_mask = False             # Whether to run the bad pixel mask
