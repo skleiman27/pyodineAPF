@@ -89,7 +89,7 @@ class ObservationWrapper(components.Observation):
         # Camera details
         self.exp_time = get_exposuretime(header, self.instrument)  # or_none(header, 'EXPOSURE')
         self.flux_level = None      # FIXME: Define a flux measure
-        self.gain = None            # FIXME: Not in header
+        self.gain = 1.            # FIXME: Not in header
         self.readout_noise = None   # FIXME: Not in header
         self.dark_current = None    # FIXME: Not in header
 
