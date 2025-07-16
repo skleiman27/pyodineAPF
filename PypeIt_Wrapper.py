@@ -4,6 +4,7 @@ import os
 import sys
 import glob
 import argparse
+import warnings
 
 from astropy.io import fits as fits
 from astropy.time import Time
@@ -15,7 +16,7 @@ from pyodine import template as temp
 from pyodine import timeseries as ts
 from astroquery.simbad import Simbad
 from barycorrpy import get_BC_vel , exposure_meter_BC_vel
-#import utc_tdb
+import utc_tdb
 
 parser = argparse.ArgumentParser(description="Set default options")
 parser.add_argument('-r', '--rawdir', \
@@ -33,13 +34,6 @@ opt = parser.parse_args()
 
 
 Simbad = Simbad()
-
-sci_dir = opt.scidir
-raw_dir = opt.rawdir
-if sci_dir == None:
-    raise ValueError("MISSING SCIENCE DIRECTORY")
-if raw_dir == None:
-    raise ValueError("MISSING RAW IMAGE DIRECTORY")
 
 def or_none(header, key, fallback_value=None):
     """A convenience function to prevent non-existent Fits-header cards from
@@ -85,16 +79,18 @@ def blaze_add(out_file,out_path):
 
 
     blaze_hdu = fits.ImageHDU(data = blaze_funcs)
-    with fits.open(out_path) as hdul:
-        name = hdul[0].header["FILENAME"]
-        if opt.outdir == None:
-
-            dir_path = os.path.dirname(out_file)
-        else:
-            dir_path = opt.outdir
-        final_path = os.path.join(dir_path,"PyPyPied_"+name)
-        hdul.append(blaze_hdu)
-        hdul.writeto(final_path, overwrite=True)
+    print(np.shape(blaze_funcs))
+    return blaze_hdu
+    #with fits.open(out_path) as hdul:
+    #    name = hdul[0].header["FILENAME"]
+    #    if opt.outdir == None:#
+    #
+    #        dir_path = os.path.dirname(out_file)
+    #    else:
+    #        dir_path = opt.outdir
+    #    final_path = os.path.join(dir_path,"PyPyPied_"+name)
+    #    hdul.append(blaze_hdu)
+    #    hdul.writeto(final_path, overwrite=True)
 
 def from_raw(out_header,raw_header):
     """
@@ -130,7 +126,7 @@ def from_simbad(header,use_simbad=True,catalog_file=None):
     header["PMDEC"] = info['pmdec'].data[0]
     header.comments['PMDEC'] = 'Dec proper motion (mas)'
 
-    header["radvel"]                          = info['rvz_radvel'].data[0]
+    header["radvel"] = info['rvz_radvel'].data[0]
     header.comments['radvel'] = 'Radial Velocity'
 
     header["redshift"] = info['rvz_redshift'].data[0]
@@ -142,52 +138,65 @@ def from_simbad(header,use_simbad=True,catalog_file=None):
     header["RA"] = info['ra'].data[0]
     header["DEC"] = info['dec'].data[0]
 
-    
+def run():
+    sci_dir = opt.scidir
+    raw_dir = opt.rawdir
+    if sci_dir == None:
+        raise ValueError("MISSING SCIENCE DIRECTORY")
+    if raw_dir == None:
+        raise ValueError("MISSING RAW IMAGE DIRECTORY")    
 
-sci_ims = glob.glob(sci_dir+"/spec1d*fits")
-os.makedirs(opt.outdir, exist_ok=True)
+    sci_ims = glob.glob(sci_dir+"/spec1d*fits")
+    os.makedirs(opt.outdir, exist_ok=True)
 
-for sci_im in sci_ims:
-    with fits.open(sci_im, mode='update') as out_file:
-        
-        out_file = fits.open(sci_im)
-        out_header = out_file[0].header
+    for sci_im in sci_ims:
+        with fits.open(sci_im, mode='update') as out_file:
+            
+            out_file = fits.open(sci_im)
+            out_header = out_file[0].header
 
-        raw_name = out_header["FILENAME"]
-        raw_im = os.path.join(raw_dir,raw_name)
-        raw_file = fits.open(raw_im)
-        raw_header = raw_file[0].header
+            raw_name = out_header["FILENAME"]
+            raw_im = os.path.join(raw_dir,raw_name)
+            raw_file = fits.open(raw_im)
+            raw_header = raw_file[0].header
 
-        from_raw(out_header, raw_header)
+            from_raw(out_header, raw_header)
 
-        if opt.catalog == None:
-            from_simbad(out_header)
-        else:
-            open()
+            if opt.catalog == None:
+                from_simbad(out_header)
+            else:
+                open()
 
-        blaze_add(out_file,sci_im)
+            blaze_hdu = blaze_add(out_file,sci_im)
+            
+    # astropy.time
+            date = out_header["THEMIDPT"]
+            pri_date = date[0:10].split('-')
+            sec_date = date[11: ].split(':')
+            for i in np.arange(0,3):
+                pri_date[i] = float(pri_date[i])
+                sec_date[i] = float(sec_date[i])
+            JD = sum(gcal2jd(pri_date[0],pri_date[1],pri_date[2]))+(sec_date[0]+sec_date[1]/60+sec_date[2]/3600)/24
 
-        date = out_header["THEMIDPT"]
-        pri_date = date[0:10].split('-')
-        sec_date = date[11: ].split(':')
-        for i in np.arange(0,3):
-            pri_date[i] = float(pri_date[i])
-            sec_date[i] = float(sec_date[i])
-        JD = sum(gcal2jd(pri_date[0],pri_date[1],pri_date[2]))+(sec_date[0]+sec_date[1]/60+sec_date[2]/3600)/24
+            bc_vel = get_BC_vel(JDUTC=JD, ra=out_header["RA"], dec=out_header["DEC"], lat=out_header["LAT-OBS"], longi=out_header["LON-OBS"], alt=out_header["ALT-OBS"], pmra=out_header["PMRA"],
+                        pmdec=out_header["PMDEC"], px=out_header["Parallax"], rv=out_header["radvel"], zmeas=out_header['redshift'],epoch=2451545.0) #This is J2000 for epoch
+            #print(bc_vel)
+            out_header["BVC"] = bc_vel[0][0]
+            out_header.comments['BVC'] = 'Barycentric Velocity'
 
-        bc_vel = get_BC_vel(JDUTC=JD, ra=out_header["RA"], dec=out_header["DEC"], lat=out_header["LAT-OBS"], longi=out_header["LON-OBS"], alt=out_header["ALT-OBS"], pmra=out_header["PMRA"],
-                    pmdec=out_header["PMDEC"], px=out_header["Parallax"], rv=out_header["radvel"], zmeas=out_header['redshift'],epoch=2451545.0)
-        print(bc_vel)
-        out_header["BVC"] = bc_vel[0][0]
-        out_header.comments['BVC'] = 'Barycentric Velocity'
+            name = out_file[0].header["FILENAME"]
+            if opt.outdir == None:
+                dir_path = os.path.dirname(out_file)
+                warnings.warn("Warning: No ouput directory detected. Defaulting to science directory" )
+            else:
+                dir_path = opt.outdir
+            out_file.append(blaze_hdu)
+            out_path = os.path.join(dir_path,"PyPyPied_"+out_header["ICELNAM"]+"_"+out_header["TARGET"]+"_"+name)
+            #out_file.info()
+            out_file.writeto(out_path, overwrite=True)
 
-        name = out_file[0].header["FILENAME"]
-        if opt.outdir == None:
-            dir_path = os.path.dirname(out_file)
-        else:
-            dir_path = opt.outdir
-        out_path = os.path.join(dir_path,"PyPyPied_"+name)
-        out_file.writeto(out_path, overwrite=True)
+if __name__ == "__main__":
+    run()
 
 #/data/APF_reductions/HD203030/20241001/raw/
 
