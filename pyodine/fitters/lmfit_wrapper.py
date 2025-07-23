@@ -93,6 +93,8 @@ class LmfitWrapper(Fitter):
         def func(lmfit_params, x, weight, chunk_ind):
             params = self.convert_params(lmfit_params, from_lmfit=True)
             if isinstance(weight, (list, np.ndarray)):
+                arr = (self.model.eval(chunk, params, require=None, chunk_ind=chunk_ind) - chunk.flux) * np.sqrt(np.abs(weight))
+                #print(arr[0:3])
                 return (self.model.eval(chunk, params, require=None, chunk_ind=chunk_ind) - chunk.flux) * np.sqrt(np.abs(weight))
             else:
                 return self.model.eval(chunk, params, require=None, chunk_ind=chunk_ind) - chunk.flux
@@ -105,6 +107,7 @@ class LmfitWrapper(Fitter):
             self.model.eval(chunk, params, require='full', chunk_ind=chunk_ind)
             # Carry out the fit
             lmfit_result = lmfit.minimize(func, lmfit_params, args=[chunk.pix, weight, chunk_ind]) #, xtol=1.e-7)
+            print(lmfit_result.params)
             # Make sure that the fitted parameters are consistent with
             # template and iodine atlas coverage
             new_params = self.convert_params(lmfit_result.params, from_lmfit=True)

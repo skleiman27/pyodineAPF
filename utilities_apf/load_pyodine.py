@@ -38,7 +38,7 @@ class IodineTemplate(components.IodineAtlas):
         
         with h5py.File(self.orig_filename, 'r') as h:
             flux = h['flux_normalized'][()]
-            wave = h['wavelength_air'][()]    # originally: wavelength_air
+            wave = h['wavelength'][()]    # originally: wavelength_air
         super().__init__(flux, wave)
 
 

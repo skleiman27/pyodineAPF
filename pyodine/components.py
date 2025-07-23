@@ -2,7 +2,9 @@ import numpy as np
 from astropy.time import TimeDelta
 import logging
 import sys
+import pdb
 
+import matplotlib.pyplot as plt
 import pyodine.comp_io as comp_io
 
 __all__ = ["Spectrum", "MultiOrderSpectrum", "Observation", "Instrument", "Star",
@@ -463,11 +465,13 @@ class NormalizedObservation(Observation):
             wave = np.array([self.orig_obs[i].wave for i in self._normalized_orders])
         else:
             wave = np.zeros(orig_flux.shape)
-        
+
         if isinstance(self.orig_obs[self._normalized_orders[0]].cont, (np.ndarray, list)):
             cont = np.array([self.orig_obs[i].cont for i in self._normalized_orders])
         else:
             cont = np.zeros(orig_flux.shape)
+            print("******************************")
+            pdb.set_trace()
         
         # Now create the data array which should be saved to fits
         data = np.array([norm_flux, orig_flux, wave, cont])
@@ -511,6 +515,10 @@ class SummedObservation(Observation):
             self._flux[i] = np.zeros(self.npix)
 
         self.add(*observations)
+        #plt.plot(self.observations[0]._wave[40], self._flux[40], 
+        # alpha=0.7, label='Summed template obs.')
+        #plt.savefig("Summed_template.png")
+        #pdb.set_trace()
 
     def __getitem__(self, order):
         """
@@ -539,7 +547,6 @@ class SummedObservation(Observation):
     def orders(self):
         """List order numbers"""
         return list(self._flux.keys())
-
     def add(self, *observations):
         """Add one or more observation to the sum of observations"""
         for obs in observations:
@@ -573,7 +580,10 @@ class SummedObservation(Observation):
             wave = np.array([self[i].wave for i in self.orders])
         else:
             wave = np.zeros(flux.shape)
-        
+
+        print(type(self[orders[0]].cont))
+        pdb.set_trace()
+
         if isinstance(self[orders[0]].cont, (np.ndarray, list)):
             cont = np.array([self[i].cont for i in self.orders])
         else:

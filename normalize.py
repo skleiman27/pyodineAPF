@@ -239,7 +239,7 @@ def top(flux, deg=2, max_iter=40, eps=0.001) -> np.ndarray:
     # Scale back to original axis and return
     return t * (fmax - fmin) + fmin
 
-
+#ADDED RADVEL TEMPORARILY
 def get_velocity_offset(spectrum, reference, normalize=True, delta_v=1000., 
                         maxlag=500):
     """Find the velocity offset (m/s) between spectrum and reference
@@ -330,5 +330,4 @@ def get_velocity_offset(spectrum, reference, normalize=True, delta_v=1000.,
     p = np.polyfit(lagscale[ii] - offset, cc[ii], 2)
     # Find the analytical maximum (and add back the offset)
     velocity = offset - 0.5 * p[1] / p[0]
-
     return velocity
