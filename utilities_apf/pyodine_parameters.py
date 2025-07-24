@@ -58,7 +58,7 @@ class Parameters:
         self.log_config_file = os.path.join(utilities_dir_path, 'logging.json')   # The logging config file
         self.log_level = logging.INFO           # The logging level used for console and info file
         
-        self.use_progressbar = False            # Use a progressbar during chunk modelling?
+        self.use_progressbar = True            # Use a progressbar during chunk modelling?
         
         # Tellurics:
         self.telluric_mask = None               # Telluric mask to use (carmenes, uves or hitran); 
@@ -88,17 +88,17 @@ class Parameters:
         self.maxlag  = 500                      # The number of steps to each side in the cross-correlation
         
         # Normalize chunks in the beginning?
-        self.normalize_chunks = True
+        self.normalize_chunks = False
         
         # Weighting of pixels:
         self.bad_pixel_mask = False             # Whether to run the bad pixel mask
         self.bad_pixel_cutoff = 0.22            # Cutoff parameter for the bad pixel mask
         self.correct_obs = False                # Whether to correct the observation in regions of weight = 0
         self.weight_type = 'flat'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
-        self.rel_noise = 0.008                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
+        self.rel_noise = 0.002                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
         
         # I2 atlas:
-        self.i2_to_use = 1                      # Index of I2 FTS to use (see archive/conf.py)
+        self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
         self.wavelength_scale = 'air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # If you want to create and save velocity analysis plots, put in the desired
@@ -412,8 +412,8 @@ class Template_Parameters:
                                 format='%(message)s')
         
         # General parameters:
-        self.osample_obs = 6                    # Oversample factor for the observation modeling
-        self.lsf_conv_width = 6.                # LSF is evaluated over this many pixels (times 2)
+        self.osample_obs = 6      #6 origingal              # Oversample factor for the observation modeling
+        self.lsf_conv_width = 6.      #6 original          # LSF is evaluated over this many pixels (times 2)
         
         self.log_config_file = os.path.join(utilities_dir_path, 'logging.json')   # The logging config file
         self.log_level = logging.INFO           # The logging level used for console and info file
@@ -436,42 +436,47 @@ class Template_Parameters:
         self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 25                 # Padding (left and right) of the chunks in pixels
         self.chunks_per_order = 22              # Maximum number of chunks per order (optional)
-        self.pix_offset0 = 30                   # The starting pixel of the first chunk within each order
+        self.pix_offset0 = 0        #30            # The starting pixel of the first chunk within each order
                                                 # (None: the chunks will be centered within orders)
         # Otherwise, if the wavelength_defined chunking algorithm is chosen, make sure you have
         # added a dictionary with start and end wavelengths for each chunk (see below constrain_parameters())
         self.wavelength_dict = self.chunk_wavelengths
         
         # Reference spectrum to use in normalizer and for the first velocity guess
-        self.ref_spectrum = 'arcturus'          # Reference spectrum ('arcturus' or 'sun')
-        self.velgues_order_range = (10,30)      # Orders used for velocity guess (should be outside I2 region)
+        self.ref_spectrum = 'sun' #arcturus         # Reference spectrum ('arcturus' or 'sun')
+        self.velgues_order_range = (10,20)  #10,20    # Orders used for velocity guess (should be outside I2 region)
         self.delta_v = 1000.                    # The velocity step size for the cross-correlation (in m/s)
         self.maxlag  = 500                      # The number of steps to each side in the cross-correlation
         
         # Normalize chunks in the beginning?
-        self.normalize_chunks = True
+        self.normalize_chunks = False
         
         # Weighting of pixels:
         self.bad_pixel_mask = False             # Whether to run the bad pixel mask
         self.bad_pixel_cutoff = 0.22            # Cutoff parameter for the bad pixel mask
+<<<<<<< HEAD
         self.correct_obs = False                # Whether to correct the observation in regions of weight = 0.
         self.weight_type = 'flat'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
+=======
+        self.correct_obs = True #False                # Whether to correct the observation in regions of weight = 0.
+        self.weight_type = 'inverse'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
+>>>>>>> e8418719b4b9e190793ba65fe3a256626c2c18f2
         self.rel_noise = 0.002                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
         
         # I2 atlas:
         self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
-        self.wavelength_scale = 'air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
+        self.wavelength_scale = 'air' #air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # The parameters for the Jansson deconvolution algorithm.
         self.jansson_run_model = 1              # Model (LSF, wave, cont) from this run used in deconvolution
         self.chunk_weights_redchi = False       # Use fitting red.Chi2 as chunk weights for template? (otherwise analytic)
         # Deconvolution parameters
         self.deconvolution_pars = {
-                'osample_temp': 10,             # Oversampling of template
-                'jansson_niter': 1200,          # Max. number of iterations in Jansson deconvolution
+                'osample_temp': 10, #10 original             # Oversampling of template
+                'jansson_niter': 1200,   #1200 original       # Max. number of iterations in Jansson deconvolution
                 'jansson_zerolevel': 0.00,      # Spectrum zero-level in Jansson deconvolution
-                'jansson_contlevel': 1.02,      # Spectrum continuum-level in Jansson deconvolution
-                'jansson_conver': 0.2,          # Convergence parameter in Jansson deconvolution (careful with that!)
+                'jansson_contlevel': 1.02, #1.02 original,      # Spectrum continuum-level in Jansson deconvolution
+                'jansson_conver': 0.2,      #.2 original    # Convergence parameter in Jansson deconvolution (careful with that!)
                 'jansson_chi_change': 1e-6,     # Minimum change of red.Chi**2 in Jansson deconvolution after 
                                                 # which iterations are stopped
                 'lsf_conv_width': self.lsf_conv_width,  # The LSF is evaluated over this many pixels (times 2)
@@ -482,7 +487,7 @@ class Template_Parameters:
         self.jansson_lsf_smoothing = {
                 'do_smoothing': False,          # If False, do no LSF smoothing
                 'smooth_lsf_run': 1,            # Smooth the LSFs from this run (None: last run)
-                'smooth_pixels': 160,           # Pixels (in dispersion direction) to smooth over
+                'smooth_pixels': 160, #original 160          # Pixels (in dispersion direction) to smooth over
                 'smooth_orders': 3,             # Orders (in cross-disp direction) to smooth over
                 'order_separation': 15,         # Avg. pixels between orders in raw spectrum
                 'smooth_manual_redchi': False,  # If true, calculate smooth weights from manual redchi2

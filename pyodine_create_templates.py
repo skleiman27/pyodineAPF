@@ -17,6 +17,8 @@ import numpy as np
 import logging
 import pdb
 
+import matplotlib.pyplot as plt
+
 import argparse
 import importlib
 
@@ -173,7 +175,10 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
                 res_names = [l.strip() for l in f.readlines()]
         else:
             res_names = None
-        
+        #plt.plot(all_temp_obs[0]._wave[40],temp_obs._flux[40])
+        #plt.plot(all_ostar_obs[0]._wave[40],ostar._flux[40])
+        #plt.savefig("temp_vs_ostar.png")
+        #pdb.set_trace()
         
         ###########################################################################
         ## Now prepare the modelling: Choose the orders, compute weights,
@@ -213,11 +218,21 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
         logging.info('')
         logging.info('Velocity guess: {0:.3f} km/s'.format(temp_velocity*1e-3))
         logging.info('Barycentric velocity: {0:.3f} km/s'.format(bary_v*1e-3))
-        
+        #plt.plot(normalizer.reference.wave,normalizer.reference.flux)
+        #plt.plot(all_temp_obs[0]._wave[40],temp_obs._flux[40]/(np.max(temp_obs._flux[40])))
+        #const = temp_velocity/299792000
+        #plt.plot(all_temp_obs[0]._wave[40]-const*all_temp_obs[0]._wave[40],temp_obs._flux[40]/(np.max(temp_obs._flux[40])))
+        plt.xlim(5600,5800)
+        #plt.savefig("templatevssun.png")
+        #pdb.set_trace()
         # Normalize the template observation (this is used as input to the
         # deconvolver later)
         norm_temp_obs = normalizer.normalize_obs(temp_obs, temp_velocity, orders=orders)
-        
+        plt.plot(normalizer.reference.wave,normalizer.reference.flux)
+        plt.plot(all_temp_obs[0]._wave[40],norm_temp_obs.flux[40])
+        plt.xlim(5600,5800)
+        plt.savefig("norm_temp_obs.png")
+        pdb.set_trace()
         # If the summed template observation should be saved, do this here
         # (set up the directory structure if non-existent yet)
         if isinstance(obs_sum_outname, str):
@@ -243,9 +258,10 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
                 print("------------------")
                 print(ostar[o].flux)
                 print(ostar[o].cont)
+                print(len(all_ostar_obs))
                 print("------------------")
                 ostar._flux[o] = (ostar[o].flux / ostar[o].cont / len(all_ostar_obs))
-                print(ostar._flux[0])
+                print(ostar._flux[o])
                 #pdb.set_trace()
                 #ostar._flux[o] = (ostar[o].flux / pyodine.template.normalize.top(ostar[o].flux, deg=3))
         
@@ -316,9 +332,11 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             if 'lsf_setup_dict' in run_dict.keys() and isinstance(run_dict['lsf_setup_dict'], dict):
                 lsf_model.adapt_LSF(run_dict['lsf_setup_dict'])
             
+
             wave_model = run_dict['wave_model'] #pyodine.models.wave.LinearWaveModel
             cont_model = run_dict['cont_model'] #pyodine.models.cont.LinearContinuumModel
-            
+            #print(cont_model)
+            #pdb.set_trace()
             # If the LSF model is a fixed LSF, try and smooth LSF results from
             # an earlier run
             if lsf_model.name() == 'FixedLSF':

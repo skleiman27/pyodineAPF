@@ -1,4 +1,5 @@
 import numpy as np
+import pdb
 from .base import ParameterSet
 from .shapes import LinearStaticModel, QuadraticStaticModel
 
@@ -20,10 +21,16 @@ class LinearContinuumModel(LinearStaticModel):
             p = np.polyfit(chunk.pix, chunk.cont, 1)
             intercept = np.median(chunk.flux)
             slope = p[0] / p[1] * intercept
+            print(slope)
+            print(intercept)
+            #pdb.set_trace()
             return ParameterSet(intercept=intercept, slope=slope)
         else:
             # Fit a straight line to the spectral flux
             p = np.polyfit(chunk.pix, chunk.flux, 1)
+            print(p[0])
+            print(p[1])
+            #pdb.set_trace()
             return ParameterSet(intercept=p[1], slope=p[0])
     
     @staticmethod

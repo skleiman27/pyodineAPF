@@ -10,13 +10,14 @@ from astropy.io import fits as fits
 from astropy.time import Time
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
+from tqdm import tqdm
 from jdcal import gcal2jd
 from pyodine import template as temp
 from pyodine import timeseries as ts
 from astroquery.simbad import Simbad
 from barycorrpy import get_BC_vel , exposure_meter_BC_vel
 import utc_tdb
+from progressbar import ProgressBar
 
 parser = argparse.ArgumentParser(description="Set default options")
 parser.add_argument('-r', '--rawdir', \
@@ -71,7 +72,7 @@ def blaze_add(out_file,out_path):
         order = header["HIERARCH ECH_ORDER"]
         wl = d["BOX_WAVE"]
         flux = d["BOX_COUNTS"]
-        blaze = temp.normalize.top(flux,deg=5,max_iter=100)
+        blaze = temp.normalize.top(flux,deg=5,max_iter=1000)
         if i ==1:
             blaze_funcs = blaze
         if i > 1:
@@ -79,7 +80,7 @@ def blaze_add(out_file,out_path):
 
 
     blaze_hdu = fits.ImageHDU(data = blaze_funcs)
-    print(np.shape(blaze_funcs))
+    #print(np.shape(blaze_funcs))
     return blaze_hdu
     #with fits.open(out_path) as hdul:
     #    name = hdul[0].header["FILENAME"]
@@ -148,8 +149,9 @@ def run():
 
     sci_ims = glob.glob(sci_dir+"/spec1d*fits")
     os.makedirs(opt.outdir, exist_ok=True)
+    bar = tqdm(total = len(sci_ims), desc = 'Images Processed')
 
-    for sci_im in sci_ims:
+    for i, sci_im in enumerate(sci_ims):
         with fits.open(sci_im, mode='update') as out_file:
             
             out_file = fits.open(sci_im)
@@ -177,6 +179,7 @@ def run():
                 pri_date[i] = float(pri_date[i])
                 sec_date[i] = float(sec_date[i])
             JD = sum(gcal2jd(pri_date[0],pri_date[1],pri_date[2]))+(sec_date[0]+sec_date[1]/60+sec_date[2]/3600)/24
+            out_header["JD-UTC"] = JD
 
             bc_vel = get_BC_vel(JDUTC=JD, ra=out_header["RA"], dec=out_header["DEC"], lat=out_header["LAT-OBS"], longi=out_header["LON-OBS"], alt=out_header["ALT-OBS"], pmra=out_header["PMRA"],
                         pmdec=out_header["PMDEC"], px=out_header["Parallax"], rv=out_header["radvel"], zmeas=out_header['redshift'],epoch=2451545.0) #This is J2000 for epoch
@@ -194,6 +197,7 @@ def run():
             out_path = os.path.join(dir_path,"PyPyPied_"+out_header["ICELNAM"]+"_"+out_header["TARGET"]+"_"+name)
             #out_file.info()
             out_file.writeto(out_path, overwrite=True)
+            bar.update(i)
 
 if __name__ == "__main__":
     run()
