@@ -1,4 +1,4 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: pyodine
 Version: 0.0.1
 Summary: An I2 analysis code for the determination of precise radial velocities from extracted input spectra, using the I2 cell method developed by Butler et al. (1996).
@@ -13,29 +13,6 @@ Classifier: Programming Language :: Python :: 3
 Requires-Python: >=3.6, <4
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: astropy>=4.2.1
-Requires-Dist: h5py>=2.10.0
-Requires-Dist: numpy>=1.20.1
-Requires-Dist: lmfit>=1.0.2
-Requires-Dist: barycorrpy>=0.4.4
-Requires-Dist: pathos>=0.2.8
-Requires-Dist: argparse>=1.1
-Requires-Dist: matplotlib>=3.3.4
-Requires-Dist: progressbar2>=3.37.1
-Requires-Dist: dill>=0.3.4
-Requires-Dist: scipy>=1.6.2
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: description-content-type
-Dynamic: home-page
-Dynamic: license
-Dynamic: license-file
-Dynamic: project-url
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
 
 # pyodine
 

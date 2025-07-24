@@ -40,8 +40,8 @@ pyodine/timeseries/bary_vel_corr.py
 pyodine/timeseries/base.py
 pyodine/timeseries/combine_vels.py
 pyodine/timeseries/misc.py
-utilities_apf/PypeIt_Wrapper.py
 utilities_apf/__init__.py
+utilities_apf/barycorrpyextra.py
 utilities_apf/conf.py
 utilities_apf/load_pyodine.py
 utilities_apf/pyodine_parameters.py
