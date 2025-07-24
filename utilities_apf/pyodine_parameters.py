@@ -454,13 +454,8 @@ class Template_Parameters:
         # Weighting of pixels:
         self.bad_pixel_mask = False             # Whether to run the bad pixel mask
         self.bad_pixel_cutoff = 0.22            # Cutoff parameter for the bad pixel mask
-<<<<<<< HEAD
-        self.correct_obs = False                # Whether to correct the observation in regions of weight = 0.
-        self.weight_type = 'flat'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
-=======
         self.correct_obs = True #False                # Whether to correct the observation in regions of weight = 0.
         self.weight_type = 'inverse'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
->>>>>>> e8418719b4b9e190793ba65fe3a256626c2c18f2
         self.rel_noise = 0.002                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
         
         # I2 atlas:
