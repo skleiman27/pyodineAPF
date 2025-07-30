@@ -157,26 +157,34 @@ def load_file(filename) -> components.Observation:
             
             flux = np.array
             # Prepare data
+            if opt_flag == True:
+                wave = h[59].data
+            else:
+                wave = h[58].data
+                
             for i in np.arange(1,56):
                 d = h[i].data
 
                 if opt_flag == True:
-
+                    #wave = d[59]
                     if i == 1:
                         flux = d["OPT_COUNTS"]
-                        wave = d["OPT_WAVE"]
+                        #wave = d["OPT_WAVE"]
                     if i > 1:
                         flux = np.vstack((flux,d["OPT_COUNTS"]))
-                        wave = np.vstack((wave,d["OPT_WAVE"]))
+                        #wave = np.vstack((wave,d["OPT_WAVE"]))
                 else:
-
+                    #wave = d[58]
                     if i == 1:
                         flux = d["BOX_COUNTS"]
-                        wave = d["BOX_WAVE"]
+                        #wave = d["BOX_WAVE"]
                     if i > 1:
                         flux = np.vstack((flux,d["BOX_COUNTS"]))
-                        wave = np.vstack((wave,d["BOX_WAVE"]))
+                        #wave = np.vstack((wave,d["BOX_WAVE"]))
 
+            #print("**************************************")
+            #print(wave)
+            #print("**************************************")
             cont = h[57].data
             
             #weight = None

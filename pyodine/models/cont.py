@@ -21,8 +21,8 @@ class LinearContinuumModel(LinearStaticModel):
             p = np.polyfit(chunk.pix, chunk.cont, 1)
             intercept = np.median(chunk.flux)
             slope = p[0] / p[1] * intercept
-            print(slope)
-            print(intercept)
+            #print(slope)
+            #print(intercept)
             #pdb.set_trace()
             return ParameterSet(intercept=intercept, slope=slope)
         else:

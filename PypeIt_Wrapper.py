@@ -57,6 +57,33 @@ def or_none(header, key, fallback_value=None):
         # TODO: Log this event
         return fallback_value
 
+def vactoair(wavelength):
+    sigma_sq = (1.e4/wavelength)**2. #wavenumber squared
+    factor = 1 + (5.792105e-2/(238.0185-sigma_sq)) + (1.67918e-3/(57.362-sigma_sq))
+    factor = factor*(wavelength>=2000.) + 1.*(wavelength<2000.) #only modify above 2000A
+    # Convert
+    new_wave = wavelength/factor
+    return new_wave
+
+def waveconvadd(out_file):
+
+    for i in np.arange(1,56):
+        d = out_file[i].data
+        wl_box = d["BOX_WAVE"]
+        wl_opt = d["OPT_WAVE"]
+        wl_boxair = vactoair(wl_box)
+        wl_optair = vactoair(wl_opt)
+        if i == 1:
+            wl_boxairlist = wl_boxair
+            wl_optairlist = wl_optair
+        if i > 1:
+            wl_boxairlist = np.vstack((wl_boxairlist, wl_boxair))
+            wl_optairlist = np.vstack((wl_optairlist, wl_optair))
+    wl_boxairHDU = fits.ImageHDU(data = wl_boxairlist)
+    wl_optairHDU = fits.ImageHDU(data = wl_optairlist)
+    return wl_boxairHDU, wl_optairHDU
+
+
 def blaze_add(out_file,out_path):
     """
     Calculates blaze function and creates new fits file with blaze function added
@@ -169,7 +196,11 @@ def run():
             else:
                 open()
 
+
+            wl_boxair_HDU, wl_optair_HDU = waveconvadd(out_file)
+
             blaze_hdu = blaze_add(out_file,sci_im)
+
             
     # astropy.time
             date = out_header["THEMIDPT"]
@@ -194,6 +225,8 @@ def run():
             else:
                 dir_path = opt.outdir
             out_file.append(blaze_hdu)
+            out_file.append(wl_boxair_HDU)
+            out_file.append(wl_optair_HDU)
             out_path = os.path.join(dir_path,"PyPyPied_"+out_header["ICELNAM"]+"_"+out_header["TARGET"]+"_"+name)
             #out_file.info()
             out_file.writeto(out_path, overwrite=True)

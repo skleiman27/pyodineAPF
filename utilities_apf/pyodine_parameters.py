@@ -53,7 +53,7 @@ class Parameters:
         # General parameters:
         self.osample_obs = 6                    # Oversample factor for the observation modeling
         self.lsf_conv_width = 6.                # LSF is evaluated over this many pixels (times 2)
-        self.number_cores = 4                   # Number of processor cores for multiprocessing
+        self.number_cores = 1                   # Number of processor cores for multiprocessing
         
         self.log_config_file = os.path.join(utilities_dir_path, 'logging.json')   # The logging config file
         self.log_level = logging.INFO           # The logging level used for console and info file
@@ -99,7 +99,7 @@ class Parameters:
         
         # I2 atlas:
         self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
-        self.wavelength_scale = 'air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
+        self.wavelength_scale = 'vacuum'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # If you want to create and save velocity analysis plots, put in the desired
         # run number here (these results will be plotted) - else put to None
@@ -436,7 +436,7 @@ class Template_Parameters:
         self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 25                 # Padding (left and right) of the chunks in pixels
         self.chunks_per_order = 22              # Maximum number of chunks per order (optional)
-        self.pix_offset0 = 0        #30            # The starting pixel of the first chunk within each order
+        self.pix_offset0 = 30        #30            # The starting pixel of the first chunk within each order
                                                 # (None: the chunks will be centered within orders)
         # Otherwise, if the wavelength_defined chunking algorithm is chosen, make sure you have
         # added a dictionary with start and end wavelengths for each chunk (see below constrain_parameters())
@@ -456,11 +456,11 @@ class Template_Parameters:
         self.bad_pixel_cutoff = 0.22            # Cutoff parameter for the bad pixel mask
         self.correct_obs = True #False                # Whether to correct the observation in regions of weight = 0.
         self.weight_type = 'inverse'               # Type of weights (flat or inverse, as implemented in pyodine.components.Spectrum)
-        self.rel_noise = 0.002                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
+        self.rel_noise = 0.002 #.002                  # Only used if weight_type='inverse': The relative noise within a flatfield spectrum
         
         # I2 atlas:
         self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
-        self.wavelength_scale = 'air' #air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
+        self.wavelength_scale = 'vacuum' #air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # The parameters for the Jansson deconvolution algorithm.
         self.jansson_run_model = 1              # Model (LSF, wave, cont) from this run used in deconvolution
@@ -505,8 +505,8 @@ class Template_Parameters:
                  # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for the run)
                  # (probably only makes sense before first run, later use smoothed results from previous runs):
-                 'pre_wave_slope_deg': 3,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'pre_wave_intercept_deg': 3,               # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'pre_wave_slope_deg': 3,   #3                 # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'pre_wave_intercept_deg': 3 , #3               # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Fitting keywords
                  'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
                  
@@ -523,49 +523,49 @@ class Template_Parameters:
                  # Plotting keywords
                  'plot_success': True,                      # Create plot of fitting success (None: False)
                  'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
-                 'plot_chunks': [150, 250, 400],            # A list with indices of chunks that will be plotted and saved
+                 'plot_chunks': [20,26,40], #[150,250,400],            # A list with indices of chunks that will be plotted and saved
                  'plot_lsf_pars': True,                     # Plot lsf parameter results (None: False)
                  
                  # Median parameter results
                  'save_median_pars': True,                  # Save median results to text file (None: False)
-                 },
+                 }}#,
                 
-                1:
-                {# First define the LSF
-                 'lsf_model': models.lsf.MultiGaussian,     # LSF model to use (this is absolutely neccessary)
-                 'lsf_setup_dict': _multigauss_setup_dict,  # The instrument-specific LSF setup parameters
-                 # Then define the wavelength model
-                 'wave_model': models.wave.LinearWaveModel,
-                 # And define the continuum model
-                 'cont_model': models.cont.LinearContinuumModel,
+                # 1:
+                # {# First define the LSF
+                #  'lsf_model': models.lsf.MultiGaussian,     # LSF model to use (this is absolutely neccessary)
+                #  'lsf_setup_dict': _multigauss_setup_dict,  # The instrument-specific LSF setup parameters
+                #  # Then define the wavelength model
+                #  'wave_model': models.wave.LinearWaveModel,
+                #  # And define the continuum model
+                #  'cont_model': models.cont.LinearContinuumModel,
                  
-                 # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
-                 # over the orders with polynomials (in order to use the smoothed values as input for the run)
-                 # (probably only makes sense before first run, later use smoothed results from previous runs):
-                 'pre_wave_slope_deg': 0,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'pre_wave_intercept_deg': 0,               # Same as above, for wavelength intercept (None or 0: no fitting)
-                 # Fitting keywords
-                 'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
+                #  # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
+                #  # over the orders with polynomials (in order to use the smoothed values as input for the run)
+                #  # (probably only makes sense before first run, later use smoothed results from previous runs):
+                #  'pre_wave_slope_deg': 0,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                #  'pre_wave_intercept_deg': 0,               # Same as above, for wavelength intercept (None or 0: no fitting)
+                #  # Fitting keywords
+                #  'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
                  
-                 # Save the fit results from this run?
-                 # You can also define the filetype:
-                 #    - 'h5py': Saves the most important results to hdf5 (small filesize, harder to recover)
-                 #    - 'dill': Saves the whole object structure to pickle (large filesize, easy to recover)
-                 'save_result': True,                       # Save the result of this run (None: True)
-                 'save_filetype': 'dill',                   # Filetype to save in (None: 'h5py')
-                 # After the chunks have been modeled, you can model the wavelength results for the chunks
-                 # over the orders with polynomials (in order to use the smoothed values as input for next run):
-                 'wave_slope_deg': 3,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'wave_intercept_deg': 3,                   # Same as above, for wavelength intercept (None or 0: no fitting)
-                 # Plotting keywords
-                 'plot_success': True,                      # Create plot of fitting success (None: False)
-                 'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
-                 'plot_chunks': [150, 250, 400],            # A list with indices of chunks that will be plotted and saved
-                 'plot_lsf_pars': True,                     # Plot lsf parameter results (None: False)
+                #  # Save the fit results from this run?
+                #  # You can also define the filetype:
+                #  #    - 'h5py': Saves the most important results to hdf5 (small filesize, harder to recover)
+                #  #    - 'dill': Saves the whole object structure to pickle (large filesize, easy to recover)
+                #  'save_result': True,                       # Save the result of this run (None: True)
+                #  'save_filetype': 'dill',                   # Filetype to save in (None: 'h5py')
+                #  # After the chunks have been modeled, you can model the wavelength results for the chunks
+                #  # over the orders with polynomials (in order to use the smoothed values as input for next run):
+                #  'wave_slope_deg': 3,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                #  'wave_intercept_deg': 3,                   # Same as above, for wavelength intercept (None or 0: no fitting)
+                #  # Plotting keywords
+                #  'plot_success': True,                      # Create plot of fitting success (None: False)
+                #  'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
+                #  'plot_chunks': [20, 26, 40],            # A list with indices of chunks that will be plotted and saved
+                #  'plot_lsf_pars': True,                     # Plot lsf parameter results (None: False)
                  
-                 # Median parameter results
-                 'save_median_pars': True,                  # Save median results to text file (None: False)
-                 }}
+                #  # Median parameter results
+                #  'save_median_pars': True,                  # Save median results to text file (None: False)
+                #  }}
         #,
         #        
         #        2:
@@ -653,14 +653,14 @@ class Template_Parameters:
                 lmfit_params[i]['velocity'].set(
                         vary=False)
                 lmfit_params[i]['tem_depth'].set(
-                        vary=False)
+                                vary=False) #False
                 
                 # SingleGaussian model - just constrain the lsf_fwhm
                 lmfit_params[i]['lsf_fwhm'].set(
-                        value=2.0, min=0.5, max=4.0)
+                        value=1.0, min=0.5, max=4.0)
                 
                 # Constrain the iodine to not become negative (just in case)
-                lmfit_params[i]['iod_depth'].set(min=0.1)
+                lmfit_params[i]['iod_depth'].set(min=.1) #usually .1, set to 1 and this makes the amplitudes match closer
                 
                 # If the chunks were normalized beforehand:
                 # Fix the continuum slope to 0
