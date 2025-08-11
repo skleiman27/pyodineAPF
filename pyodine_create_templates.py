@@ -220,19 +220,19 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
         logging.info('Barycentric velocity: {0:.3f} km/s'.format(bary_v*1e-3))
         #plt.plot(normalizer.reference.wave,normalizer.reference.flux)
         #plt.plot(all_temp_obs[0]._wave[40],temp_obs._flux[40]/(np.max(temp_obs._flux[40])))
-        #const = temp_velocity/299792000
+        const = temp_velocity/299792000
         #plt.plot(all_temp_obs[0]._wave[40]-const*all_temp_obs[0]._wave[40],temp_obs._flux[40]/(np.max(temp_obs._flux[40])))
-        plt.xlim(5600,5800)
+        #plt.xlim(5600,5800)
         #plt.savefig("templatevssun.png")
         #pdb.set_trace()
         # Normalize the template observation (this is used as input to the
         # deconvolver later)
         norm_temp_obs = normalizer.normalize_obs(temp_obs, temp_velocity, orders=orders)
-        plt.plot(normalizer.reference.wave,normalizer.reference.flux)
-        plt.plot(all_temp_obs[0]._wave[40],norm_temp_obs.flux[40])
-        plt.xlim(5600,5800)
-        plt.savefig("norm_temp_obs.png")
-        pdb.set_trace()
+        #plt.plot(normalizer.reference.wave,normalizer.reference.flux)
+        #plt.plot(all_temp_obs[0]._wave[40]-const*all_temp_obs[0]._wave[40],norm_temp_obs._flux[40])
+        #plt.xlim(5600,5800)
+        #plt.savefig("norm_temp_obs.png")
+        #pdb.set_trace()
         # If the summed template observation should be saved, do this here
         # (set up the directory structure if non-existent yet)
         if isinstance(obs_sum_outname, str):
@@ -243,6 +243,7 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             logging.info('')
             logging.info('Saved summed, normalized template observations to:')
             logging.info(obs_sum_outname)
+        #pdb.set_trace()
         
         # Load the tellurics (if desired)
         if Pars.telluric_mask is not None:
@@ -279,7 +280,17 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
         else:
             raise KeyError('Algorithm {} not known! (Must be one of auto_equal_width, wavelength_defined)'.format(
                     Pars.chunking_algorithm))
-        
+        #print(ostar_chunks[0].pix)
+        #print(dir(ostar_chunks[0]))
+        #print(ostar_chunks[0].padded.abspix[0],ostar_chunks[0].padded.abspix[-1])
+        #print(ostar_chunks[1].padded.abspix[0],ostar_chunks[1].padded.abspix[-1])
+
+        #for i in np.arange(0,len(ostar_chunks)):
+        #    plt.plot(ostar_chunks[i].padded.abspix,[1-i/44]*len(ostar_chunks[i].padded.abspix))
+        #    plt.ylim(0,1.05)
+        #    #plt.xlim(0,200)
+        #    plt.savefig("chunks.png")
+        #pdb.set_trace()
         nr_chunks_total  = len(ostar_chunks)
         nr_chunks_order0 = len(ostar_chunks.get_order(ostar_chunks.orders[0]))
         nr_orders_chunks = len(ostar_chunks.orders)
@@ -295,7 +306,13 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
         # Produce the chunk weight array
         chunk_weight = []
         for chunk in ostar_chunks:
-            chunk_weight.append(weight[chunk.order, chunk.abspix[0]:chunk.abspix[-1]+1])
+            chunk_weight.append(weight[chunk.order, chunk.abspix[0]:chunk.abspix[-1]+1]*1000000)
+        print("============")
+        print(chunk_weight)
+        print("============")
+        pdb.set_trace()
+        
+
         #chunk_weight = np.array(chunk_weight)
         
         ###########################################################################
@@ -335,8 +352,8 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
 
             wave_model = run_dict['wave_model'] #pyodine.models.wave.LinearWaveModel
             cont_model = run_dict['cont_model'] #pyodine.models.cont.LinearContinuumModel
-            #print(cont_model)
-            #pdb.set_trace()
+            print(cont_model)
+            pdb.set_trace()
             # If the LSF model is a fixed LSF, try and smooth LSF results from
             # an earlier run
             if lsf_model.name() == 'FixedLSF':
@@ -387,6 +404,14 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             starting_pars = []
             for i, chunk in enumerate(ostar_chunks):
                 starting_pars.append(model.guess_params(chunk))
+            print("MODEL DIRECTORY")
+            print(dir(model))
+            print(model.stellar_template)
+            #print("============")
+            #print(starting_pars)
+            #print("============")
+
+            #pdb.set_trace()
             
             # Fit wavelength guess within each order if desired (smoother input)
             # (this really only makes sense for the very first run, otherwise
@@ -404,18 +429,32 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
                 # Write the smoothed intercepts into starting_pars
                 for i in range(nr_chunks_total):
                     starting_pars[i]['wave_intercept'] = poly_pars[i]
-            
+
+            for i in np.arange(0,len(ostar_chunks)):
+                plt.figure()
+                
             # Convert starting parameters to lmfit-parameters 
             lmfit_params = []
             for i in range(nr_chunks_total):
                 lmfit_params.append(fitter.convert_params(starting_pars[i], to_lmfit=True))
-            
+            print("============")
+            print(lmfit_params[26])
+            print("============")
+            print(dir(model))
+            print(dir(model.wave_model))
+            print(model.stellar_template)
+
             # Constrain the parameters, using the definitions as supplied in
             # the parameter input file
             lmfit_params = Pars.constrain_parameters(
                     lmfit_params, run_id, run_results, fitter
+          
                     )
-            
+            for i, chunk in enumerate(ostar_chunks):
+                #print(starting_pars[i])
+                plt.plot(chunk.wave, chunk.flux)
+                #plt.plot(chunk.wave, starting_pars[i]['wave_slope']*chunk.wave+starting_pars[i]['wave_intercept'])
+                plt.plot(chunk.wave,model.eval_spectrum(chunk,lmfit_params[i]))
             ###########################################################################
             ## Finally loop over the chunks and model each of them.
             ###########################################################################
@@ -432,7 +471,8 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             (run_results[run_id]['results'], run_results[run_id]['chunk_w'], 
              run_results[run_id]['fitting_failed'], chauvenet_outliers, 
              run_results[run_id]['red_chi_sq']) = modelling_return
-            
+            #print(run_results[0]['results'].lmfit_result)
+            #pdb.set_trace()
             
             ###########################################################################
             ## Now we do some run diagnostics and analysis of the model results.

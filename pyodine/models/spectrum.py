@@ -2,7 +2,9 @@ import numpy as np
 from scipy.interpolate import splrep, splev
 import logging
 import sys
+import pdb
 
+import matplotlib.pyplot as plt
 from ..lib.misc import rebin, osample
 from .base import DynamicModel, ParameterSet
 
@@ -37,6 +39,11 @@ class SimpleModel(DynamicModel):
         params = ParameterSet(velocity=0., tem_depth=1., iod_depth=1.)  # TODO: Improve these guesses!
         params.add(self.lsf_model.guess_params(chunk), prefix='lsf')
         params.add(self.wave_model.guess_params(chunk), prefix='wave')
+        param_set = self.wave_model.guess_params(chunk)
+        #plt.figure()
+        #plt.scatter(chunk.pix,chunk.wave,alpha=.25,s=1)
+        #plt.plot(chunk.pix,param_set['intercept']+chunk.pix*param_set['slope'],alpha=.25)
+        #plt.savefig('wavemodel_vs_wave.png')
         params.add(self.cont_model.guess_params(chunk), prefix='cont')
         return params
 
@@ -127,9 +134,18 @@ class SimpleModel(DynamicModel):
             # Ensure "normalization" to mean value 1.0
             # FIXME: Do something more sophisticated here
             flux_tem = tem.flux / np.mean(tem.flux)
+            plt.figure()
+            plt.plot(chunk.pix, flux_tem)
+            plt.savefig("stellar_temp_norm.png")
+            pdb.set_trace()
 
             # Scale depth of stellar template
             flux_tem = params['tem_depth'] * (flux_tem - 1.0) + 1.0
+
+            plt.figure()
+            plt.plot(chunk.pix, flux_tem)
+            plt.savefig("stellar_temp_scaled.png")
+            pdb.set_trace()
 
             # Interpolate shifted stellar template to the fine grid
             # (Extrapolation may happen, but if keyword `require` is set to

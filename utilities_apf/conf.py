@@ -44,5 +44,5 @@ my_iodine_atlases = {
     2: os.path.join(i2_dir_path, 'ftslick05_norm_new.h5'),
     3: os.path.join(i2_dir_path, 'Fischer_Cell_May2022_downsampled3.h5'),
     4: os.path.join(i2_dir_path, 'Butler_Cell1.h5'),
-    5: os.path.join(i2_dir_path, 'nist2apf.hdf5' ) #TO DO: FILL OUT
+    5: os.path.join(i2_dir_path, 'nist2apf_ver3.hdf5' ) #TO DO: FILL OUT
 }

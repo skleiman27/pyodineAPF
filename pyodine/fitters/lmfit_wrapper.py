@@ -107,7 +107,10 @@ class LmfitWrapper(Fitter):
             self.model.eval(chunk, params, require='full', chunk_ind=chunk_ind)
             # Carry out the fit
             lmfit_result = lmfit.minimize(func, lmfit_params, args=[chunk.pix, weight, chunk_ind]) #, xtol=1.e-7)
-            print(lmfit_result.params)
+            if chunk_ind == 123:
+                print(lmfit_result.params)
+            if chunk_ind == 124:
+                print(lmfit_result.params)                
             # Make sure that the fitted parameters are consistent with
             # template and iodine atlas coverage
             new_params = self.convert_params(lmfit_result.params, from_lmfit=True)
