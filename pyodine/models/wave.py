@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from .base import ParameterSet
 from .shapes import LinearStaticModel, QuadraticStaticModel
 
@@ -15,7 +16,11 @@ class LinearWaveModel(LinearStaticModel):
         :return: The guessed parameters (wavelength zero point and slope).
         :rtype: :class:`ParameterSet`
         """
+        # plt.figure()
+        # plt.scatter(chunk.pix, chunk.wave, color = "deepskyblue")
         p = np.polyfit(chunk.pix, chunk.wave, 1)
+        # plt.plot(chunk.pix, chunk.pix * p[0] + p[1], color = "navy")
+        # plt.savefig("Single Chunk")
         return ParameterSet(intercept=p[1], slope=p[0])
     
     @staticmethod

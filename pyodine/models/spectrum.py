@@ -36,7 +36,7 @@ class SimpleModel(DynamicModel):
         :rtype: :class:`ParameterSet`
         """
         
-        params = ParameterSet(velocity=0., tem_depth=1., iod_depth=1.)  # TODO: Improve these guesses!
+        params = ParameterSet(velocity=10000., tem_depth=10., iod_depth=100.)  # TODO: Improve these guesses!
         params.add(self.lsf_model.guess_params(chunk), prefix='lsf')
         params.add(self.wave_model.guess_params(chunk), prefix='wave')
         param_set = self.wave_model.guess_params(chunk)
