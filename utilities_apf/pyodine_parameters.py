@@ -25,8 +25,8 @@ utilities_dir_path = os.path.dirname(os.path.realpath(__file__))
 _multigauss_setup_dict = {
         #'positions': [-2.9, -2.5, -1.9, -1.4, -1.0, 0.0, 1.0, 1.4, 1.9, 2.5, 2.9],
         #'sigmas':    [ 0.9,  0.9,  0.9,  0.9,  0.9, 0.6, 0.9, 0.9, 0.9, 0.9, 0.9]
-        'positions': [0., -6., -4.8, -3.7, -2.7, -1.8, -1.2, -0.8, 0.8, 1.2, 1.8, 2.7, 3.7, 4.8, 6.],
-        'sigmas': [1.10, 0., 1.0, 0.8, 0.65, 0.5, 0.4, .3, 0.3, 0.4, 0.5, 0.65, 0.8, 1.0, 0.]
+        'positions': [-6., -4.8, -3.7, -2.7, -1.8, -1.2, -0.8, 0.0, 0.8, 1.2, 1.8, 2.7, 3.7, 4.8, 6.],
+        'sigmas':     [0.,  1.0,  0.8, 0.65,  0.5,  0.4,  0.3, 1.10, 0.3, 0.4, 0.5, 0.65, 0.8, 1.0, 0.]
         #'sigmas': [100]*15
         } #0.3 for 8th
 
@@ -100,7 +100,7 @@ class Parameters:
         
         # I2 atlas:
         self.i2_to_use = 5                      # Index of I2 FTS to use (see archive/conf.py)
-        self.wavelength_scale = 'air'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
+        self.wavelength_scale = 'vacuum'           # Which wavelength scale to use ('air' or 'vacuum' - should always be the first)
         
         # If you want to create and save velocity analysis plots, put in the desired
         # run number here (these results will be plotted) - else put to None
@@ -121,8 +121,8 @@ class Parameters:
                  # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for the run)
                  # (probably only makes sense before first run, later use smoothed results from previous runs):
-                 'pre_wave_slope_deg': 0,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'pre_wave_intercept_deg': 0,               # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'pre_wave_slope_deg': 1,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'pre_wave_intercept_deg': 1,               # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Fitting keywords
                  'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
                  
@@ -134,12 +134,12 @@ class Parameters:
                  'save_filetype': 'h5py',                   # Filetype to save in (None: 'h5py')
                  # After the chunks have been modeled, you can model the wavelength results for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for next run):
-                 'wave_slope_deg': 0,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'wave_intercept_deg': 0,                   # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'wave_slope_deg': 1,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'wave_intercept_deg': 1,                   # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Plotting keywords
                  'plot_success': True,                      # Create plot of fitting success (None: False)
                  'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
-                 'plot_chunks': [150, 250, 400],            # A list with indices of chunks that will be plotted and saved
+                 'plot_chunks': [20, 26, 40],            # A list with indices of chunks that will be plotted and saved
                  'plot_lsf_pars': True,                     # Plot lsf parameter results (None: False)
                  
                  # Median parameter results
@@ -158,8 +158,8 @@ class Parameters:
                  # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for the run)
                  # (probably only makes sense before first run, later use smoothed results from previous runs):
-                 'pre_wave_slope_deg': 0,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'pre_wave_intercept_deg': 0,               # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'pre_wave_slope_deg': 1,                   # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'pre_wave_intercept_deg': 1,               # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Fitting keywords
                  'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
                  
@@ -171,12 +171,12 @@ class Parameters:
                  'save_filetype': 'h5py',                   # Filetype to save in (None: 'h5py')
                  # After the chunks have been modeled, you can model the wavelength results for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for next run):
-                 'wave_slope_deg': 3,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'wave_intercept_deg': 3,                   # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'wave_slope_deg': 1,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'wave_intercept_deg': 1,                   # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Plotting keywords
                  'plot_success': True,                      # Create plot of fitting success (None: False)
                  'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
-                 'plot_chunks': [150, 250, 400],            # A list with indices of chunks that will be plotted and saved
+                 'plot_chunks': [20, 26, 40],            # A list with indices of chunks that will be plotted and saved
                  'plot_lsf_pars': True,                     # Plot lsf parameter results (None: False)
                  
                  # Median parameter results
@@ -432,7 +432,7 @@ class Template_Parameters:
         self.chunking_algorithm = 'auto_equal_width'
         # If the auto_equal_width chunking algorithm is used, the chunks are defined by the user
         # through their width, padding, number of chunks per order, and pixel offset of the first chunk:
-        self.temp_order_range = (40,40) #(18,41)         # Order range (min,max) to use in observation modeling;
+        self.temp_order_range = (40,41) #(18,41)         # Order range (min,max) to use in observation modeling;
                                                 # (None,None) uses all orders
         self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 25                 # Padding (left and right) of the chunks in pixels
