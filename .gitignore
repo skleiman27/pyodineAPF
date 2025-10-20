@@ -7,6 +7,8 @@ dist/*
 doc/_build/*
 doc/build_/*
 bin/bin/*
+__pycache__/
+
 
 # Compiled source #
 ###################
@@ -37,12 +39,11 @@ bin/bin/*
 *.zip
 
 # Various files #
-#################
 *.pdf
 tmp*.*
 *testing.ipynb
 Untitled.ipynb
-tst*.fits
+*.png
 
 # Logs and databases #
 ######################
@@ -72,12 +73,23 @@ Thumbs.db
 *.ipynb_checkpoints
 *.pytest_cache
 *.swp
+<<<<<<< HEAD
+=======
+pypeit/_compiler.c
+pypeit/data/telluric/atm_grids/*.fits
+pypeit/data/QL_CALIB
+>>>>>>> d07b7f2cfd2e61e6d58cd0b1a24244c55ae5b187
 
 *.pckl
 
 # added by TEP
 doc/sphinx_warnings.out
+<<<<<<< HEAD
 .DS_Store
 
 *png
 *pyc
+=======
+pypeit/tests/files/setup_files/*
+.DS_Store
+>>>>>>> d07b7f2cfd2e61e6d58cd0b1a24244c55ae5b187

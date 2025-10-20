@@ -30,7 +30,7 @@ Pars.deconvolution_pars
 
 # O-star observations to use for the mod?elling
 ostar_dir   = "/data/APF_reductions/HD203030/20241001/PyPyPiOUT/"
-ostar_files = glob.glob(ostar_dir+"PyPyPied_In_HR7906*")
+ostar_files = glob.glob(ostar_dir+"PyPyPied_In_*")
 ostar_files.sort()
 #ostar_files = ostar_files[0:2]
 print(ostar_files)

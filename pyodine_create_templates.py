@@ -281,9 +281,11 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             raise KeyError('Algorithm {} not known! (Must be one of auto_equal_width, wavelength_defined)'.format(
                     Pars.chunking_algorithm))
         #print(ostar_chunks[0].pix)
-        #print(dir(ostar_chunks[0]))
+        print(dir(ostar_chunks[0]))
         #print(ostar_chunks[0].padded.abspix[0],ostar_chunks[0].padded.abspix[-1])
         #print(ostar_chunks[1].padded.abspix[0],ostar_chunks[1].padded.abspix[-1])
+        plt.scatter(ostar_chunks[1].abspix,ostar_chunks[1].wave)
+        plt.savefig("chunk")
 
         #for i in np.arange(0,len(ostar_chunks)):
         #    plt.plot(ostar_chunks[i].padded.abspix,[1-i/44]*len(ostar_chunks[i].padded.abspix))
@@ -412,7 +414,29 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
             #print("============")
 
             #pdb.set_trace()
-            
+            plt.figure()
+            #lmfit_params
+            order = 0
+            for i, chunk in enumerate(ostar_chunks):
+                #plt.figure()
+                #plotting_lmfit_params = fitter.convert_params(lmfit_params[i], from_lmfit=True)
+                
+                #print(model.wave_model.guess_params(chunk))
+                #plt.plot(chunk.wave, chunk.flux, color = 'blue')
+                plt.scatter(chunk.pix, chunk.wave, color = "blue", label = "pypeit wl", s = 2)
+                plt.plot(chunk.pix, starting_pars[i]['wave_slope']*chunk.pix+starting_pars[i]['wave_intercept'], color = "purple", label = "pyodine wl")
+                #plt.plot(chunk.wave, starting_pars[i]['wave_slope']*chunk.wave+starting_pars[i]['wave_intercept'],label = "m = " + str(starting_pars[i]['wave_slope']))
+                #plt.scatter(chunk.wave[0], starting_pars[i]['wave_slope']*chunk.wave[0]+starting_pars[i]['wave_intercept'], label = "b = " + str(starting_pars[i]['wave_intercept']))
+            plt.xlabel("Pixel Number")
+            plt.ylabel("Wavelength ($\AA$)")
+                #plt.title("Chunk " + str(i))
+                #plt.legend()
+            plt.title("All Chunks in order 40")
+            plt.savefig("allchunks40_wavesol.png")
+
+                #plt.plot(model.eval_spectrum(chunk,plotting_lmfit_params).wave,model.eval_spectrum(chunk,plotting_lmfit_params).flux, alpha = .5, color = 'green')
+            #plt.xlim(5740,5755)
+            plt.savefig("all_chunks_wavesols.png")
             # Fit wavelength guess within each order if desired (smoother input)
             # (this really only makes sense for the very first run, otherwise
             # use smoothed wavelength results from previous runs)
@@ -450,11 +474,17 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
                     lmfit_params, run_id, run_results, fitter
           
                     )
+            plt.figure()
+            #lmfit_params
             for i, chunk in enumerate(ostar_chunks):
-                #print(starting_pars[i])
-                plt.plot(chunk.wave, chunk.flux)
-                #plt.plot(chunk.wave, starting_pars[i]['wave_slope']*chunk.wave+starting_pars[i]['wave_intercept'])
-                plt.plot(chunk.wave,model.eval_spectrum(chunk,lmfit_params[i]))
+                plotting_lmfit_params = fitter.convert_params(lmfit_params[i], from_lmfit=True)
+
+                print(model.wave_model.guess_params(chunk))
+                #plt.plot(chunk.wave, chunk.flux, color = 'blue')
+                plt.plot(chunk.wave, starting_pars[i]['wave_slope']*chunk.wave+starting_pars[i]['wave_intercept'])
+                #plt.plot(model.eval_spectrum(chunk,plotting_lmfit_params).wave,model.eval_spectrum(chunk,plotting_lmfit_params).flux, alpha = .5, color = 'green')
+            #plt.xlim(5740,5755)
+            #plt.savefig("all_chunks_wavesols.png")
             ###########################################################################
             ## Finally loop over the chunks and model each of them.
             ###########################################################################
