@@ -432,7 +432,7 @@ class Template_Parameters:
         self.chunking_algorithm = 'auto_equal_width'
         # If the auto_equal_width chunking algorithm is used, the chunks are defined by the user
         # through their width, padding, number of chunks per order, and pixel offset of the first chunk:
-        self.temp_order_range = (40,40) #(18,41)         # Order range (min,max) to use in observation modeling;
+        self.temp_order_range = (40,41) #(18,41)         # Order range (min,max) to use in observation modeling;
                                                 # (None,None) uses all orders
         self.chunk_width = 91                   # Width of chunks in pixels in observation modeling
         self.chunk_padding = 25                 # Padding (left and right) of the chunks in pixels
