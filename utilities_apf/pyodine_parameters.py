@@ -506,8 +506,8 @@ class Template_Parameters:
                  # Before the chunks are modeled, you can smooth the wavelength guesses for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for the run)
                  # (probably only makes sense before first run, later use smoothed results from previous runs):
-                 'pre_wave_slope_deg': 3,   #3                 # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'pre_wave_intercept_deg': 3 , #3               # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'pre_wave_slope_deg': 1,   #3                 # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'pre_wave_intercept_deg': 1 , #3               # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Fitting keywords
                  'use_chauvenet_pixels': True,              # Chauvenet criterion for pixel outliers? (None: False)
                  
@@ -519,8 +519,8 @@ class Template_Parameters:
                  'save_filetype': 'h5py',                   # Filetype to save in (None: 'h5py')
                  # After the chunks have been modeled, you can model the wavelength results for the chunks
                  # over the orders with polynomials (in order to use the smoothed values as input for next run):
-                 'wave_slope_deg': 3,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
-                 'wave_intercept_deg': 3,                   # Same as above, for wavelength intercept (None or 0: no fitting)
+                 'wave_slope_deg': 1,                       # Polynomial degree of dispersion fitting (None or 0: no fitting)
+                 'wave_intercept_deg': 1,                   # Same as above, for wavelength intercept (None or 0: no fitting)
                  # Plotting keywords
                  'plot_success': True,                      # Create plot of fitting success (None: False)
                  'plot_analysis': True,                     # Create analysis plots (residuals etc.) (None: False)
