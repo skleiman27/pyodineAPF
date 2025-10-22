@@ -129,11 +129,17 @@ class ObservationWrapper(components.Observation):
             raise IndexError(type(order))
 
 
-def load_file(filename) -> components.Observation:
+def load_file(filename, opt_flag=False, air_flag=False) -> components.Observation:
     """A convenience function to load observation data from file
     
     :param filename: The filename of the observation to load.
     :type filename: str
+    :param opt_flag: Whether to load the optimally extracted spectrum
+        (default: False, i.e., load the box-car extracted spectrum).
+    :type opt_flag: bool
+    :param air_flag: Whether to load the air-wavelength solution
+        (default: False, i.e., load the vacuum-wavelength solution).
+    :type air_flag: bool
     
     :return: The flux of the observation spectrum.
     :rtype: ndarray
@@ -147,7 +153,7 @@ def load_file(filename) -> components.Observation:
     try:
         ext = splitext(filename)[1]
         if ext == '.fits':
-            opt_flag = False
+
             # Load the file
             h = pyfits.open(filename)
             header = h[0].header
@@ -157,34 +163,37 @@ def load_file(filename) -> components.Observation:
             
             flux = np.array
             # Prepare data
-            #if opt_flag == True:
-            #    wave = h[59].data
-            #else:
-            #    wave = h[58].data
+            # these are air wavelengths that are added
+            # in the post-processing step
+            if air_flag:
+                if opt_flag:
+                    wave = h[59].data
+                else:
+                    wave = h[58].data
+
+            if opt_flag:
+                prefix = "OPT_"
+            else:
+                prefix = "BOX_"
 
             for i in np.arange(1,56):
                 d = h[i].data
-
-                if opt_flag == True:
-                    #wave = d[59]
-                    if i == 1:
-                        flux = d["OPT_COUNTS"]
-                        wave = d["OPT_WAVE"]
-                    if i > 1:
-                        flux = np.vstack((flux,d["OPT_COUNTS"]))
-                        wave = np.vstack((wave,d["OPT_WAVE"]))
+                if i == 1:
+                    flux = d[f"{prefix}COUNTS"]
+                    if air_flag is False:
+                        wave = d[f"{prefix}WAVE"]
                 else:
-                    #wave = d[58]
-                    if i == 1:
-                        flux = d["BOX_COUNTS"]
-                        wave = d["BOX_WAVE"]
-                    if i > 1:
-                        flux = np.vstack((flux,d["BOX_COUNTS"]))
-                        wave = np.vstack((wave,d["BOX_WAVE"]))
+                    flux = np.vstack((flux,d[f"{prefix}COUNTS"]))
+                    if air_flag is False:
+                        wave = np.vstack((wave,d[f"{prefix}WAVE"]))
+
 
             #print("**************************************")
             #print(wave)
             #print("**************************************")
+            # TODO: Which continuum is this? 
+            # Probably this is fit to the optimal and not the box car, so 
+            # we should have two
             cont = h[57].data
 
             #weight = None
