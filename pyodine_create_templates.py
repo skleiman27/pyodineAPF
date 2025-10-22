@@ -379,7 +379,7 @@ def create_template(utilities, Pars, ostar_files, temp_files, temp_outname,
                             ostar_chunks, run_dict['smooth_pixels'], run_dict['smooth_orders'], 
                             run_dict['order_separation'], run_results[smooth_lsf_run]['results'],
                             redchi2=manual_redchi2, osample=smooth_osample)
-                    logging.info('LSFs with nans: ', len(np.unique(np.argwhere(np.isnan(lsf_smoothed))[:,0])))
+                    logging.info('LSFs with nans: ' + str(len(np.unique(np.argwhere(np.isnan(lsf_smoothed))[:,0]))))
                     
                     LSFarr = pyodine.models.lsf.LSF_Array(lsf_smoothed, np.array([ch.order for ch in ostar_chunks]),
                                                           np.array([ch.abspix[0] for ch in ostar_chunks]))
